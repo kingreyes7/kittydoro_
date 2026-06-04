@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KittyDoro - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="logo_kittydoro.png" type="image/png">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        :root {
+            --pink-strong: #FF1493;
+            --pink-dark: #8B008B;
+            --white: #FFFFFF;
+            --text-color: #1a1a1a;
+            --container-bg: rgba(255, 255, 255, 0.96);
+            --led-color: #FFFFFF;
+            --led-glow: 0 0 20px 5px var(--led-color);
+            --bg-tint: rgba(255, 192, 203, 0.4);
+        }
+
+        body.dark-mode {
+            --container-bg: rgba(25, 25, 25, 0.95);
+            --text-color: #ffffff;
+            --white: #333333;
+            --bg-tint: rgba(0, 0, 0, 0.8);
+            --led-glow: 0 0 25px 8px var(--led-color);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Quicksand', sans-serif; }
+
+        body {
+            background-image: url('fondo2.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            background-color: var(--bg-tint);
+            background-blend-mode: overlay;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            transition: 0.5s ease;
+        }
+
+        /* App Container Responsivo */
+        .app-container {
+            background: var(--container-bg);
+            width: 100%;
+            max-width: 450px;
+            min-height: 580px;
+            border-radius: 40px;
+            box-shadow: var(--led-glow);
+            overflow: hidden;
+            border: 6px solid var(--led-color);
+            position: relative;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 12px 5px;
+            background: var(--white);
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; color: #888; transition: 0.3s;
+        }
+        .nav-item.active { color: var(--pink-strong); transform: scale(1.1); }
+        .nav-item .icon { font-size: 1.4rem; }
+        .nav-item .label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
+
+        .view { display: none; padding: 30px 20px; text-align: center; animation: fadeIn 0.4s ease; flex-grow: 1; }
+        .view.active { display: flex; flex-direction: column; justify-content: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .timer-display { 
+            font-size: clamp(3.5rem, 12vw, 5rem); 
+            font-weight: 700; 
+            color: var(--text-color); 
+            margin: 15px 0;
+            line-height: 1;
+        }
+
+        .status-badge {
+            display: inline-block; padding: 8px 22px; background: var(--pink-strong);
+            color: white; border-radius: 25px; font-weight: 700; margin-bottom: 20px;
+            font-size: 0.9rem; align-self: center;
+        }
+
+        .controls { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+
+        button {
+            padding: 14px 24px; border: none; border-radius: 20px;
+            background: var(--pink-strong); color: white; font-weight: 700;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+        button:active { transform: scale(0.95); }
+        button.secondary { background: #636e72; box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+
+        .kitty-pomo {
+            width: 160px; height: 160px; margin: 0 auto 15px;
+            border: 5px solid var(--pink-strong); border-radius: 50%;
+            background: white; padding: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .kitty-pomo img { width: 100%; height: 100%; object-fit: contain; }
+
+        .theme-btn {
+            position: absolute; top: 85px; right: 20px;
+            background: var(--white); border-radius: 50%; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10;
+        }
+
+        /* ===== MENÚ FLOTANTE (FAB) ===== */
+        .fab-container {
+            position: fixed; bottom: 25px; right: 25px;
+            display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 15px;
+            z-index: 100;
+        }
+        .fab-main {
+            width: 60px; height: 60px; border-radius: 50%; background: var(--pink-strong);
+            color: white; display: flex; justify-content: center; align-items: center;
+            font-size: 1.8rem; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.4);
+        }
+        .fab-main.active { transform: rotate(45deg); background: #444; }
+
+        .fab-options {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+            opacity: 0; transform: translateY(20px); pointer-events: none; transition: 0.3s;
+        }
+        .fab-options.show { opacity: 1; transform: translateY(0); pointer-events: all; }
+
+        .fab-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .fab-label {
+            background: var(--container-bg); color: var(--text-color); padding: 8px 15px;
+            border-radius: 12px; font-size: 0.85rem; font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid var(--pink-strong);
+        }
+        .fab-icon {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--white);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid var(--pink-strong);
+        }
+
+        /* ===== MODALES ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none;
+            justify-content: center; align-items: center; z-index: 200;
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background: var(--container-bg); padding: 30px; border-radius: 35px;
+            width: 90%; max-width: 400px; text-align: center; border: 4px solid var(--pink-strong);
+            color: var(--text-color);
+        }
+
+        textarea {
+            width: 100%; height: 120px; border-radius: 20px;
+            padding: 15px; border: 2px solid #ddd; outline: none;
+            margin: 15px 0; font-size: 0.95rem; background: var(--white);
+            color: var(--text-color); transition: 0.3s; resize: none;
+        }
+        textarea:focus { border-color: var(--pink-strong); box-shadow: 0 0 10px rgba(255, 20, 147, 0.1); }
+
+        .editable-time { border-bottom: 3px dashed var(--pink-strong); cursor: text; outline: none; }
+
+        /* Personalización 3 Fases */
+        .custom-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; }
+        .custom-slot {
+            border: 2px dashed var(--pink-strong); border-radius: 20px; padding: 12px;
+            cursor: pointer; position: relative; display: flex; align-items: center; gap: 15px;
+            background: rgba(255, 20, 147, 0.04);
+        }
+        .custom-slot img { width: 55px; height: 55px; object-fit: cover; border-radius: 12px; display: none; }
+        .has-image img { display: block; }
+        .has-image .slot-emoji { display: none; }
+        .slot-info { text-align: left; }
+        .slot-label { font-weight: 700; display: block; color: var(--pink-strong); font-size: 0.9rem; }
+        .slot-hint { font-size: 0.7rem; opacity: 0.6; }
+
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .app-container { min-height: 90vh; border-radius: 30px; max-width: 95%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="mainContainer">
+        <div class="theme-btn" onclick="toggleTheme()">🌓</div>
+
+        <nav>
+            <div class="nav-item active" onclick="showView('pomodoro', this)">
+                <span class="icon">🍅</span><span class="label">Pomo</span>
+            </div>
+            <div class="nav-item" onclick="showView('timer', this)">
+                <span class="icon">⏲️</span><span class="label">Temp</span>
+            </div>
+            <div class="nav-item" onclick="showView('stopwatch', this)">
+                <span class="icon">⏳</span><span class="label">Crono</span>
+            </div>
+            <div class="nav-item" onclick="showView('alarm', this)">
+                <span class="icon">⏰</span><span class="label">Alarma</span>
+            </div>
+            <div class="nav-item" onclick="showView('clock', this)">
+                <span class="icon">🕒</span><span class="label">Reloj</span>
+            </div>
+        </nav>
+
+        <!-- Pomodoro -->
+        <section id="pomodoro" class="view active">
+            <div class="kitty-pomo">
+                <img id="kittyImg" src="hello.png" alt="Kitty">
+            </div>
+            <div id="pomo-status" class="status-badge">¡HOLA!</div>
+            <div id="pomo-display" class="timer-display">25:00</div>
+            <div class="controls">
+                <button onclick="startPomodoro()">INICIAR</button>
+                <button class="secondary" onclick="pausePomodoro()">PAUSAR</button>
+                <button class="secondary" onclick="resetPomodoro()">⟲</button>
+            </div>
+        </section>
+
+        <!-- Timer -->
+        <section id="timer" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">TEMPORIZADOR</h2>
+            <div id="timer-display" class="timer-display editable-time" contenteditable="true">10:00</div>
+            <div class="controls">
+                <button onclick="startTimer()">INICIAR</button>
+                <button class="secondary" onclick="pauseTimer()">PAUSAR</button>
+                <button class="secondary" onclick="resetTimer()">⟲</button>
+            </div>
+        </section>
+
+        <!-- Stopwatch -->
+        <section id="stopwatch" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">CRONÓMETRO</h2>
+            <div id="stopwatch-display" class="timer-display">00:00:00</div>
+            <div class="controls">
+                <button onclick="startStopwatch()">INICIAR</button>
+                <button class="secondary" onclick="pauseStopwatch()">PAUSAR</button>
+                <button class="secondary" onclick="resetStopwatch()">⟲</button>
+            </div>
+        </section>
+
+        <!-- Alarm -->
+        <section id="alarm" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">ALARMA</h2>
+            <div id="alarm-display" class="timer-display editable-time" contenteditable="true">08:00</div>
+            <div id="alarm-status" style="margin-top: 10px; color: var(--pink-strong); font-weight: bold;"></div>
+            <div class="controls">
+                <button onclick="setAlarm()">ACTIVAR</button>
+                <button class="secondary" onclick="clearAlarm()">QUITAR</button>
+            </div>
+        </section>
+
+        <!-- Clock -->
+        <section id="clock" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">RELOJ</h2>
+            <div id="clock-display" class="timer-display" style="color: var(--pink-strong);">00:00:00</div>
+            <div id="date-display" style="font-weight: 700; opacity: 0.7;">...</div>
+        </section>
+    </div>
+
+    <!-- Menú Flotante -->
+    <div class="fab-container">
+        <div class="fab-main" id="fabMain" onclick="toggleFab()">+</div>
+        <div class="fab-options" id="fabOptions">
+            <div class="fab-item" onclick="openModal('modalPersonalizar')">
+                <span class="fab-label">Personalizar Fondo</span>
+                <div class="fab-icon">🎨</div>
+            </div>
+            <div class="fab-item" onclick="openModal('modalTutorial')">
+                <span class="fab-label">Cómo Usar</span>
+                <div class="fab-icon">📖</div>
+            </div>
+            <div class="fab-item" onclick="openModal('modalPuntuar')">
+                <span class="fab-label">Danos tu Opinión</span>
+                <div class="fab-icon">⭐</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modalPuntuar" class="modal-overlay">
+        <div class="modal-content">
+            <h2>¿Te gusta KittyDoro? 🐾</h2>
+            <div style="font-size: 2.5rem; color: #FFD700; margin: 15px 0;" id="starRating">
+                <span onclick="setStars(1)" style="cursor:pointer">☆</span><span onclick="setStars(2)" style="cursor:pointer">☆</span><span onclick="setStars(3)" style="cursor:pointer">☆</span><span onclick="setStars(4)" style="cursor:pointer">☆</span><span onclick="setStars(5)" style="cursor:pointer">☆</span>
+            </div>
+            <textarea id="comment" placeholder="Cuéntanos cómo podemos mejorar..."></textarea>
+            <button onclick="sendFeedback()" style="width: 100%;">Enviar Comentario</button>
+            <button class="secondary" onclick="closeModal('modalPuntuar')" style="width: 100%; margin-top: 10px;">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modalTutorial" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Guía Rápida 🎀</h2>
+            <p style="text-align: left; font-size: 0.95rem; line-height: 1.6; margin: 20px 0;">
+                • <b>LED Dinámico:</b> El borde brilla según tu progreso.<br>
+                • <b>Kitty:</b> Cambia su estado según si estudias o descansas.<br>
+                • <b>Tiempo:</b> Toca los números para editarlos (no borres los ":").<br>
+                • <b>Fondos:</b> Personaliza Inicio, Estudio y Pausa en el menú 🎨.
+            </p>
+            <button onclick="closeModal('modalTutorial')" style="width: 100%;">¡Entendido!</button>
+        </div>
+    </div>
+
+    <div id="modalPersonalizar" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Personalizar Fases 🎨</h2>
+            <div class="custom-grid">
+                <div class="custom-slot" id="slot-inicio">
+                    <img id="preview-inicio"> <span class="slot-emoji">🏠</span>
+                    <div class="slot-info">
+                        <span class="slot-label">Inicio</span>
+                        <span class="slot-hint">Fondo principal</span>
+                    </div>
+                    <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('inicio', this)">
+                </div>
+                <div class="custom-slot" id="slot-estudiando">
+                    <img id="preview-estudiando"> <span class="slot-emoji">📚</span>
+                    <div class="slot-info">
+                        <span class="slot-label">Estudiando</span>
+                        <span class="slot-hint">Durante el Pomodoro</span>
+                    </div>
+                    <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('estudiando', this)">
+                </div>
+                <div class="custom-slot" id="slot-pausa">
+                    <img id="preview-pausa"> <span class="slot-emoji">☕</span>
+                    <div class="slot-info">
+                        <span class="slot-label">Pausa</span>
+                        <span class="slot-hint">Al detener el tiempo</span>
+                    </div>
+                    <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('pausa', this)">
+                </div>
+            </div>
+            <button onclick="applyAndClose()" style="width: 100%;">Aplicar Cambios</button>
+            <button class="secondary" onclick="closeModal('modalPersonalizar')" style="width: 100%; margin-top: 10px;">Cerrar</button>
+        </div>
+    </div>
+
+    <audio id="kittySound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+
+    <script>
+        emailjs.init("6azUPAB7x-KSDaXJL");
+        const mainContainer = document.getElementById('mainContainer');
+        const kittyImg = document.getElementById('kittyImg');
+        const kittySound = document.getElementById('kittySound');
+
+        // === PROTECCIÓN DE TIEMPO ===
+        function setupEditable(id) {
+            const el = document.getElementById(id);
+            el.addEventListener('keydown', (e) => {
+                const isNumber = /^[0-9]$/i.test(e.key);
+                const isControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key);
+                if (isControl) {
+                    const sel = window.getSelection();
+                    const offset = sel.anchorOffset;
+                    if (e.key === 'Backspace' && el.innerText[offset-1] === ':') e.preventDefault();
+                    if (e.key === 'Delete' && el.innerText[offset] === ':') e.preventDefault();
+                    return;
+                }
+                if (!isNumber) e.preventDefault();
+            });
+            el.addEventListener('blur', () => { if(!el.innerText.includes(':')) el.innerText = "10:00"; });
+        }
+        setupEditable('timer-display');
+        setupEditable('alarm-display');
+
+        // === FONDOS ===
+        const DEFAULT_BG = { inicio: "url('fondo2.png')", estudiando: "url('fondo_biblioteca.png')", pausa: "url('fondo2.png')" };
+        let activeBg = { ...DEFAULT_BG };
+        let pendingBg = {};
+
+        function loadSavedBgs() {
+            Object.keys(DEFAULT_BG).forEach(key => {
+                const saved = localStorage.getItem('kittydoro_v2_' + key);
+                if (saved) {
+                    activeBg[key] = `url('${saved}')`;
+                    const img = document.getElementById('preview-' + key);
+                    if(img) {
+                        img.src = saved;
+                        img.parentElement.classList.add('has-image');
+                    }
+                }
+            });
+        }
+
+        function loadCustomBg(key, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pendingBg[key] = e.target.result;
+                const img = document.getElementById('preview-' + key);
+                img.src = e.target.result;
+                img.parentElement.classList.add('has-image');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyAndClose() {
+            Object.keys(pendingBg).forEach(key => {
+                localStorage.setItem('kittydoro_v2_' + key, pendingBg[key]);
+                activeBg[key] = `url('${pendingBg[key]}')`;
+            });
+            pendingBg = {};
+            applyBg('inicio');
+            closeModal('modalPersonalizar');
+        }
+
+        function applyBg(state) { document.body.style.backgroundImage = activeBg[state] || DEFAULT_BG[state]; }
+
+        // === POMODORO ===
+        let pomoSecs = 25 * 60, initialPomo = 25 * 60, pomoInterval = null;
+
+        function updatePomoVisuals() {
+            const progress = ((initialPomo - pomoSecs) / initialPomo) * 100;
+            let color = "#ffffff";
+            if (progress <= 25) color = "#ff4757";
+            else if (progress <= 50) color = "#ffa502";
+            else if (progress <= 75) color = "#2ed573";
+            else color = "#1e90ff";
+            document.documentElement.style.setProperty('--led-color', color);
+        }
+
+        function startPomodoro() {
+            if (pomoInterval) return;
+            // IMAGEN CUANDO INICIA
+            kittyImg.src = "Kitty estudiosa.png";
+            applyBg('estudiando');
+            pomoInterval = setInterval(() => {
+                if (pomoSecs <= 0) { 
+                    clearInterval(pomoInterval); 
+                    pomoInterval = null;
+                    kittySound.play();
+                    // IMAGEN CUANDO TERMINA
+                    kittyImg.src = "kitty20.png";
+                    return; 
+                }
+                pomoSecs--;
+                document.getElementById('pomo-display').innerText = formatTime(pomoSecs);
+                updatePomoVisuals();
+            }, 1000);
+        }
+
+        function pausePomodoro() { 
+            clearInterval(pomoInterval); 
+            pomoInterval = null; 
+            // IMAGEN CUANDO SE PAUSA
+            kittyImg.src = "kitty sentada.png";
+            applyBg('pausa'); 
+        }
+
+        function resetPomodoro() { 
+            pausePomodoro(); 
+            pomoSecs = 25 * 60; 
+            document.getElementById('pomo-display').innerText = "25:00"; 
+            kittyImg.src = "hello.png"; // Imagen base al resetear
+            applyBg('inicio'); 
+            document.documentElement.style.setProperty('--led-color', '#ffffff'); 
+        }
+
+        function formatTime(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+
+        // === OTROS RELOJES ===
+        let timerInterval, swTime = 0, swInterval;
+        function startTimer() {
+            if (timerInterval) return;
+            let parts = document.getElementById('timer-display').innerText.split(':');
+            let s = (+parts[0] * 60) + (+parts[1]);
+            timerInterval = setInterval(() => {
+                if (s <= 0) { clearInterval(timerInterval); kittySound.play(); return; }
+                s--; document.getElementById('timer-display').innerText = formatTime(s);
+            }, 1000);
+        }
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); document.getElementById('timer-display').innerText = "10:00"; }
+
+        function startStopwatch() {
+            if (swInterval) return;
+            swInterval = setInterval(() => {
+                swTime += 100;
+                let s = Math.floor(swTime/1000), ms = Math.floor((swTime%1000)/10);
+                document.getElementById('stopwatch-display').innerText = formatTime(s) + ":" + ms.toString().padStart(2,'0');
+            }, 100);
+        }
+        function pauseStopwatch() { clearInterval(swInterval); swInterval = null; }
+        function resetStopwatch() { pauseStopwatch(); swTime = 0; document.getElementById('stopwatch-display').innerText = "00:00:00"; }
+
+        // === FAB Y GENERAL ===
+        function toggleFab() { 
+            document.getElementById('fabMain').classList.toggle('active'); 
+            document.getElementById('fabOptions').classList.toggle('show'); 
+        }
+        function showView(viewId, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active'); el.classList.add('active');
+        }
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; toggleFab(); }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function setStars(n) {
+            let spans = document.getElementById('starRating').children;
+            for(let i=0; i<5; i++) spans[i].innerText = i < n ? '★' : '☆';
+        }
+
+        function sendFeedback() {
+            const comment = document.getElementById('comment').value;
+            if(!comment) return alert("Por favor escribe algo.");
+            emailjs.send("service_xolynnx", "template_fdnigue", { message: comment })
+                .then(() => { alert("¡Gracias por tu mensaje! 🐾"); closeModal('modalPuntuar'); });
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock-display').innerText = now.toLocaleTimeString('es-ES', {hour12:false});
+            document.getElementById('date-display').innerText = now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+        }, 1000);
+
+        loadSavedBgs();
+        applyBg('inicio');
+    </script>
+</body>
+</html>
