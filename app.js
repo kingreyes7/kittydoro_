@@ -9,7 +9,7 @@ const kittySound    = document.getElementById('kittySound');
 const charData = {
     hello: {
         inicio: "hello.png",
-        estudio: "Kittyestudiosa.png",
+        estudio: "kittyestudiosa.png",
         pausa:   "kittysentada.png",
         final:   "kitty20.png"
     },
