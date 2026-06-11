@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KittyDoro - Premium</title>
+    <link rel="icon" type="image/png" href="logo_app.png">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="logo_kittydoro.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container" id="mainContainer">
+        <div class="theme-btn" onclick="toggleTheme()">🌓</div>
+
+        <nav>
+            <div class="nav-item active" onclick="showView('pomodoro', this)">
+                <span class="icon">🍅</span><span class="label">Pomo</span>
+            </div>
+            <div class="nav-item" onclick="showView('timer', this)">
+                <span class="icon">⏲️</span><span class="label">Temp</span>
+            </div>
+            <div class="nav-item" onclick="showView('stopwatch', this)">
+                <span class="icon">⏳</span><span class="label">Crono</span>
+            </div>
+            <div class="nav-item" onclick="showView('alarm', this)">
+                <span class="icon">⏰</span><span class="label">Alarma</span>
+            </div>
+            <div class="nav-item" onclick="showView('clock', this)">
+                <span class="icon">🕒</span><span class="label">Reloj</span>
+            </div>
+        </nav>
+
+        <!-- Pomodoro -->
+        <section id="pomodoro" class="view active">
+            <div class="kitty-pomo">
+                <img id="kittyImg" src="hello.png" alt="Kitty">
+            </div>
+            <div id="pomo-status" class="status-badge">¡HOLA!</div>
+            <div id="pomo-display" class="timer-display">25:00</div>
+            <div class="controls" id="pomo-controls">
+                <button id="btn-pomo-start"   onclick="startPomodoro()">INICIAR</button>
+                <button id="btn-pomo-pause"   onclick="pausePomodoro()"  style="display:none">PAUSAR</button>
+                <button id="btn-pomo-resume"  onclick="startPomodoro()"  style="display:none">REANUDAR</button>
+                <button id="btn-pomo-reset"   onclick="resetPomodoro()"  class="secondary" style="display:none">⟲</button>
+            </div>
+        </section>
+
+        <!-- Timer -->
+        <section id="timer" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">TEMPORIZADOR</h2>
+            <div id="timer-display" class="timer-display editable-time" contenteditable="true">10:00</div>
+            <div class="controls">
+                <button id="btn-timer-start"  onclick="startTimer()">INICIAR</button>
+                <button id="btn-timer-pause"  onclick="pauseTimer()"  style="display:none">PAUSAR</button>
+                <button id="btn-timer-resume" onclick="startTimer()"  style="display:none">REANUDAR</button>
+                <button id="btn-timer-reset"  onclick="resetTimer()"   class="secondary" style="display:none">⟲</button>
+            </div>
+        </section>
+
+        <!-- Stopwatch -->
+        <section id="stopwatch" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">CRONÓMETRO</h2>
+            <div id="stopwatch-display" class="timer-display">00:00:00</div>
+            <div class="controls">
+                <button id="btn-sw-start"  onclick="startStopwatch()">INICIAR</button>
+                <button id="btn-sw-pause"  onclick="pauseStopwatch()"  style="display:none">PAUSAR</button>
+                <button id="btn-sw-resume" onclick="startStopwatch()"  style="display:none">REANUDAR</button>
+                <button id="btn-sw-reset"  onclick="resetStopwatch()"   class="secondary" style="display:none">⟲</button>
+            </div>
+        </section>
+
+        <!-- Alarm -->
+        <section id="alarm" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">ALARMA</h2>
+            <div id="alarm-display" class="timer-display editable-time" contenteditable="true">08:00</div>
+            <div id="alarm-status" style="margin-top: 10px; color: var(--pink-strong); font-weight: bold;"></div>
+            <div class="controls">
+                <button onclick="setAlarm()">ACTIVAR</button>
+                <button class="secondary" onclick="clearAlarm()">QUITAR</button>
+            </div>
+        </section>
+
+        <!-- Clock -->
+        <section id="clock" class="view">
+            <h2 style="font-size: 1.1rem; margin-bottom: 10px;">RELOJ</h2>
+            <div id="clock-display" class="timer-display" style="color: var(--pink-strong);">00:00:00</div>
+            <div id="date-display" style="font-weight: 700; opacity: 0.7;">...</div>
+        </section>
+    </div>
+
+    <!-- Menú Flotante -->
+    <div class="fab-container">
+        <div class="fab-main" id="fabMain" onclick="toggleFab()">+</div>
+        <div class="fab-options" id="fabOptions">
+            <div class="fab-item" onclick="openModal('modalPersonalizar')">
+                <span class="fab-label">Personalizar</span>
+                <div class="fab-icon">🎨</div>
+            </div>
+            <div class="fab-item" onclick="openModal('modalTutorial')">
+                <span class="fab-label">Cómo Usar</span>
+                <div class="fab-icon">📖</div>
+            </div>
+            <div class="fab-item" onclick="openModal('modalPuntuar')">
+                <span class="fab-label">Danos tu Opinión</span>
+                <div class="fab-icon">⭐</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Personalizar -->
+    <div id="modalPersonalizar" class="modal-overlay">
+        <div class="modal-content">
+            <div id="pomo-custom-start">
+                <h2>¿Qué quieres cambiar? 🎨</h2>
+                <div class="custom-choice-container">
+                    <div class="choice-card" onclick="showCustomSection('chars')">
+                        <div class="icon">🐾</div>
+                        <span>Otros personajes</span>
+                    </div>
+                    <div class="choice-card" onclick="showCustomSection('design')">
+                        <div class="icon">🖼️</div>
+                        <span>Mi diseño</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pomo-custom-chars" style="display: none;">
+                <h2>Elige tu Compañero 🐾</h2>
+                <div class="char-grid">
+                    <div class="char-item" onclick="selectCharacter('hello')">
+                        <div class="char-circle"><img src="hello.png"></div>
+                        <span class="char-name">Hello Kitty</span>
+                    </div>
+                    <div class="char-item" onclick="selectCharacter('kuromi')">
+                        <div class="char-circle"><img src="kuromi_inicio.png"></div>
+                        <span class="char-name">Kuromi</span>
+                    </div>
+                    <div class="char-item" onclick="selectCharacter('pompompurin')">
+                        <div class="char-circle"><img src="pompompurin_inicio.png"></div>
+                        <span class="char-name">Pompompurin</span>
+                    </div>
+                </div>
+                <button class="secondary" onclick="showCustomSection('start')" style="width: 100%;">Volver</button>
+            </div>
+
+            <div id="pomo-custom-design" style="display: none;">
+                <h2>Personalizar Fondos 🎨</h2>
+                <div class="custom-grid">
+                    <div class="custom-slot" id="slot-inicio">
+                        <img id="preview-inicio"> <span class="slot-emoji">🏠</span>
+                        <div class="slot-info"><span class="slot-label">Inicio</span><span class="slot-hint">Fondo principal</span></div>
+                        <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('inicio', this)">
+                    </div>
+                    <div class="custom-slot" id="slot-estudiando">
+                        <img id="preview-estudiando"> <span class="slot-emoji">📚</span>
+                        <div class="slot-info"><span class="slot-label">Estudiando</span><span class="slot-hint">Durante el Pomo</span></div>
+                        <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('estudiando', this)">
+                    </div>
+                    <div class="custom-slot" id="slot-pausa">
+                        <img id="preview-pausa"> <span class="slot-emoji">☕</span>
+                        <div class="slot-info"><span class="slot-label">Pausa</span><span class="slot-hint">Al detener el tiempo</span></div>
+                        <input type="file" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer" onchange="loadCustomBg('pausa', this)">
+                    </div>
+                </div>
+                <button onclick="applyAndClose()" style="width: 100%;">Aplicar Cambios</button>
+                <button class="secondary" onclick="showCustomSection('start')" style="width: 100%; margin-top: 10px;">Volver</button>
+            </div>
+
+            <button class="secondary" onclick="closeModal('modalPersonalizar')" style="width: 100%; margin-top: 10px;">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal Puntuar -->
+    <div id="modalPuntuar" class="modal-overlay">
+        <div class="modal-content">
+            <h2>¿Te gusta KittyDoro? 🐾</h2>
+            <div style="font-size: 2.5rem; color: #FFD700; margin: 15px 0;" id="starRating">
+                <span onclick="setStars(1)" style="cursor:pointer">☆</span>
+                <span onclick="setStars(2)" style="cursor:pointer">☆</span>
+                <span onclick="setStars(3)" style="cursor:pointer">☆</span>
+                <span onclick="setStars(4)" style="cursor:pointer">☆</span>
+                <span onclick="setStars(5)" style="cursor:pointer">☆</span>
+            </div>
+            <textarea id="comment" placeholder="Cuéntanos cómo podemos mejorar..."></textarea>
+            <button onclick="sendFeedback()" style="width: 100%;">Enviar Comentario</button>
+            <button class="secondary" onclick="closeModal('modalPuntuar')" style="width: 100%; margin-top: 10px;">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal Tutorial -->
+    <div id="modalTutorial" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Guía Rápida 🎀</h2>
+            <p style="text-align: left; font-size: 0.95rem; line-height: 1.6; margin: 20px 0;">
+                • <b>LED Dinámico:</b> El borde brilla según tu progreso.<br>
+                • <b>Kitty & Amigos:</b> Cambian según si estudias o descansas.<br>
+                • <b>Tiempo:</b> Toca los números para editarlos.<br>
+                • <b>Personalizar:</b> Cambia personajes o sube tus propios fondos.
+            </p>
+            <button onclick="closeModal('modalTutorial')" style="width: 100%;">¡Entendido!</button>
+        </div>
+    </div>
+
+    <audio id="kittySound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+
+    <script src="app.js"></script>
+</body>
+</html>
